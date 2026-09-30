@@ -1,26 +1,212 @@
 @import "tailwindcss";
 
+/* Dark mode follows the `.dark` class on <html>, set before paint from the saved
+   preference (System / Light / Dark). "System" tracks prefers-color-scheme live. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
+  --bg: #f4f4f2;
+  --surface: #ffffff;
+  --surface-2: #f2f2ef;
+  --surface-3: #e9e9e5;
+  --border: rgba(11, 11, 11, 0.08);
+  --border-strong: rgba(11, 11, 11, 0.14);
+  --text: #111110;
+  --text-2: #5a5955;
+  --text-3: #86857f;
+  --ink: #111110;          /* primary buttons */
+  --ink-contrast: #ffffff;
+  --focus: #2a78d6;
+
+  /* Metric identity colours (validated categorical slots; never used for text) */
+  --c-weight: #2a78d6;
+  --c-strength: #eb6834;
+  --c-abdomen: #1baf7a;
+  --c-protein: #eda100;
+  --c-sleep: #4a3aa7;
+  --c-cardio: #e87ba4;
+  --c-waist: #008300;
+  --c-chest: #e34948;
+
+  /* Status (always paired with icon + label) */
+  --good: #0ca30c;
+  --good-text: #006300;
+  --good-bg: rgba(12, 163, 12, 0.1);
+  --warn: #fab219;
+  --warn-text: #8a5a00;
+  --warn-bg: rgba(250, 178, 25, 0.14);
+  --bad: #d03b3b;
+  --bad-text: #b02a2a;
+  --bad-bg: rgba(208, 59, 59, 0.1);
+
+  --grid: #e1e0d9;
+  --axis: #898781;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+.dark {
+  color-scheme: dark;
+  --bg: #0b0b0b;
+  --surface: #171716;
+  --surface-2: #1f1f1e;
+  --surface-3: #2a2a28;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --text: #f5f5f3;
+  --text-2: #b9b8b0;
+  --text-3: #8a8983;
+  --ink: #f5f5f3;
+  --ink-contrast: #111110;
+  --focus: #5598e7;
+
+  --c-weight: #3987e5;
+  --c-strength: #d95926;
+  --c-abdomen: #199e70;
+  --c-protein: #c98500;
+  --c-sleep: #9085e9;
+  --c-cardio: #d55181;
+  --c-waist: #0ca30c;
+  --c-chest: #e66767;
+
+  --good-text: #3fc83f;
+  --good-bg: rgba(12, 163, 12, 0.16);
+  --warn-text: #fab219;
+  --warn-bg: rgba(250, 178, 25, 0.14);
+  --bad-text: #ef6b6b;
+  --bad-bg: rgba(208, 59, 59, 0.18);
+
+  --grid: #2c2c2a;
+  --axis: #898781;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
+  --color-fg: var(--text);
+  --color-fg-2: var(--text-2);
+  --color-fg-3: var(--text-3);
+  --color-ink: var(--ink);
+  --color-ink-contrast: var(--ink-contrast);
+  --color-good: var(--good);
+  --color-good-text: var(--good-text);
+  --color-good-bg: var(--good-bg);
+  --color-warn: var(--warn);
+  --color-warn-text: var(--warn-text);
+  --color-warn-bg: var(--warn-bg);
+  --color-bad: var(--bad);
+  --color-bad-text: var(--bad-text);
+  --color-bad-bg: var(--bad-bg);
+  --color-weight: var(--c-weight);
+  --color-strength: var(--c-strength);
+  --color-abdomen: var(--c-abdomen);
+  --color-protein: var(--c-protein);
+  --color-sleep: var(--c-sleep);
+  --color-cardio: var(--c-cardio);
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, "Segoe UI", Roboto, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
 }
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+/* Inputs */
+.input {
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 16px; /* prevents iOS zoom */
+  color: var(--text);
+  transition: border-color 0.15s, background 0.15s;
+}
+.input:focus {
+  outline: none;
+  border-color: var(--focus);
+  background: var(--surface);
+}
+.input::placeholder {
+  color: var(--text-3);
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Subtle entrance animation */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.rise {
+  animation: rise 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@keyframes fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+dialog[open] {
+  animation: rise 0.25s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(2px);
+  animation: fade 0.2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-none { scrollbar-width: none; }
+
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+.safe-top { padding-top: env(safe-area-inset-top); }
