@@ -17,6 +17,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   return (
     <AppShell
       mode={mode}
+      research={s.researchEnabled}
       activeSession={active ? { id: active.id, title: active.title } : null}
       config={{
         today: today(),

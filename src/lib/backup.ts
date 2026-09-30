@@ -158,9 +158,23 @@ export function dailyCsv(db: DB): string {
   return toCsv(headers, rows.map((r) => headers.map((h) => r[h])));
 }
 
+export function researchCsv(db: DB): string {
+  const rows = all<Record<string, unknown>>(db,
+    `SELECT e.protocol_week, e.date, e.amount_mg, e.status, e.notes,
+            o.date AS obs_date, o.weight_lb, o.appetite, o.energy, o.nausea, o.gi, o.skin, o.resting_hr, o.notes AS obs_notes
+       FROM research_entry e LEFT JOIN research_observation o ON o.entry_id = e.id
+     UNION ALL
+     SELECT NULL, NULL, NULL, NULL, NULL, o.date, o.weight_lb, o.appetite, o.energy, o.nausea, o.gi, o.skin, o.resting_hr, o.notes
+       FROM research_observation o WHERE o.entry_id IS NULL
+     ORDER BY 2, 6`);
+  const headers = ['protocol_week', 'date', 'amount_mg', 'status', 'notes', 'obs_date', 'weight_lb', 'appetite', 'energy', 'nausea', 'gi', 'skin', 'resting_hr', 'obs_notes'];
+  return toCsv(headers, rows.map((r) => headers.map((h) => r[h])));
+}
+
 export const CSV_EXPORTS = {
   measurements: measurementsCsv,
   workouts: workoutsCsv,
   cardio: cardioCsv,
   daily: dailyCsv,
+  research: researchCsv,
 } as const;

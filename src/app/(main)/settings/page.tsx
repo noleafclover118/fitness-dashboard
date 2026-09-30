@@ -6,7 +6,7 @@ import { useDb } from '@/components/client/DataProvider';
 import { getProfile, getSettings } from '@/lib/repo/settings';
 import { Card, CardTitle, PageHeader } from '@/components/ui';
 import { ThemeToggle } from '@/components/client/ThemeToggle';
-import { DataPanel, ProfileForm, TargetsForm } from '@/components/client/SettingsForms';
+import { DataPanel, ProfileForm, ResearchSettings, TargetsForm } from '@/components/client/SettingsForms';
 
 export default function SettingsPage() {
   const { db, mode } = useDb();
@@ -32,8 +32,12 @@ export default function SettingsPage() {
         <div className="max-w-sm"><ThemeToggle /></div>
       </Card>
       <Card>
+        <CardTitle>Research protocol</CardTitle>
+        <ResearchSettings key={mode} enabled={s.researchEnabled} compound={s.researchCompound} />
+      </Card>
+      <Card>
         <CardTitle>Your data</CardTitle>
-        <DataPanel mode={mode} />
+        <DataPanel mode={mode} research={s.researchEnabled} />
       </Card>
       <Card>
         <CardTitle>Privacy</CardTitle>

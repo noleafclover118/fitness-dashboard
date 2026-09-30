@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useState, useTransition, type ReactNode } from 'react';
 import clsx from 'clsx';
 import {
-  LayoutGrid, CalendarCheck, Dumbbell, LineChart, Beef, BedDouble, History, Settings, Plus, MoreHorizontal, Play, FlaskConical,
+  LayoutGrid, CalendarCheck, Dumbbell, LineChart, Beef, BedDouble, History, Settings, Plus, MoreHorizontal, Play, FlaskConical, ClipboardList,
 } from 'lucide-react';
 import { QuickLogProvider, useQuickLog, type QuickLogConfig } from './QuickLog';
 import { Sheet } from './Sheet';
@@ -33,16 +33,18 @@ function isActive(path: string, href: string) {
   return href === '/' ? path === '/' : path === href || path.startsWith(href + '/');
 }
 
-export function AppShell({ children, config, mode, activeSession }: { children: ReactNode; config: QuickLogConfig; mode: 'real' | 'sample'; activeSession: { id: number; title: string } | null }) {
+export function AppShell({ children, config, mode, activeSession, research }: { children: ReactNode; config: QuickLogConfig; mode: 'real' | 'sample'; activeSession: { id: number; title: string } | null; research: boolean }) {
   return (
     <QuickLogProvider config={config}>
-      <Shell mode={mode} activeSession={activeSession}>{children}</Shell>
+      <Shell mode={mode} activeSession={activeSession} research={research}>{children}</Shell>
     </QuickLogProvider>
   );
 }
 
-function Shell({ children, mode, activeSession }: { children: ReactNode; mode: 'real' | 'sample'; activeSession: { id: number; title: string } | null }) {
+function Shell({ children, mode, activeSession, research }: { children: ReactNode; mode: 'real' | 'sample'; activeSession: { id: number; title: string } | null; research: boolean }) {
   const path = usePathname();
+  // Optional section: only listed when turned on in Settings.
+  const nav = research ? [...NAV.slice(0, 6), { href: '/research', label: 'Research', icon: ClipboardList }, ...NAV.slice(6)] : NAV;
   const { open } = useQuickLog();
   const [more, setMore] = useState(false);
   const [pending, start] = useTransition();
@@ -58,7 +60,7 @@ function Shell({ children, mode, activeSession }: { children: ReactNode; mode: '
           <span className="text-[17px] font-semibold tracking-tight">Fitness</span>
         </Link>
         <nav className="flex flex-1 flex-col gap-0.5">
-          {NAV.map(({ href, label, icon: Icon }) => (
+          {nav.map(({ href, label, icon: Icon }) => (
             <Link key={href} href={href} aria-current={isActive(path, href) ? 'page' : undefined}
               className={clsx('flex h-10 items-center gap-3 rounded-xl px-3 text-[15px] font-medium transition',
                 isActive(path, href) ? 'bg-surface text-fg shadow-[var(--shadow)] ring-1 ring-line' : 'text-fg-2 hover:bg-surface-2 hover:text-fg')}>
@@ -104,7 +106,7 @@ function Shell({ children, mode, activeSession }: { children: ReactNode; mode: '
               {label}
             </Link>
           ))}
-          <button type="button" onClick={() => setMore(true)} className={clsx('flex h-16 flex-col items-center justify-center gap-1 text-[11px] font-medium', ['/nutrition', '/recovery', '/history', '/settings', '/workouts'].some((h) => isActive(path, h)) ? 'text-fg' : 'text-fg-3')}>
+          <button type="button" onClick={() => setMore(true)} className={clsx('flex h-16 flex-col items-center justify-center gap-1 text-[11px] font-medium', ['/nutrition', '/recovery', '/history', '/settings', '/workouts', '/research'].some((h) => isActive(path, h)) ? 'text-fg' : 'text-fg-3')}>
             <MoreHorizontal className="size-[22px]" aria-hidden />
             More
           </button>
@@ -112,7 +114,7 @@ function Shell({ children, mode, activeSession }: { children: ReactNode; mode: '
       </nav>
       <Sheet open={more} onClose={() => setMore(false)} title="More">
         <div className="grid grid-cols-2 gap-2">
-          {NAV.filter((n) => !['/', '/progress'].includes(n.href)).map(({ href, label, icon: Icon }) => (
+          {nav.filter((n) => !['/', '/progress'].includes(n.href)).map(({ href, label, icon: Icon }) => (
             <Link key={href} href={href} onClick={() => setMore(false)} className="flex h-16 items-center gap-3 rounded-2xl bg-surface-2 px-4 font-medium">
               <Icon className="size-5 text-fg-2" aria-hidden /> {label}
             </Link>

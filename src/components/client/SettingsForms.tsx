@@ -86,7 +86,9 @@ export function TargetsForm({ settings }: { settings: Settings }) {
       e.preventDefault();
       if (v.proteinMax < v.proteinMin) return setError('Protein range: maximum must be at least the minimum');
       if (v.sleepGoalMax < v.sleepGoalMin) return setError('Sleep goal: upper value must be at least the lower value');
-      start(async () => { const r = await saveSettings(v); setSaved(r.ok); setError(r.ok ? null : r.error); });
+      // Save only this form's fields so it never overwrites settings owned by other sections.
+      const own = Object.fromEntries(Object.entries(v).filter(([k]) => !['researchEnabled', 'researchCompound', 'onboarded'].includes(k))) as Partial<Settings>;
+      start(async () => { const r = await saveSettings(own); setSaved(r.ok); setError(r.ok ? null : r.error); });
     }}>
       <div className="grid gap-5 sm:grid-cols-2">
         <Row label="Daily protein target (g)" hint="Reaching the minimum counts as hitting target.">
@@ -143,7 +145,35 @@ function readLastBackup(mode: string) {
   }
 }
 
-export function DataPanel({ mode }: { mode: 'real' | 'sample' }) {
+export function ResearchSettings({ enabled, compound }: { enabled: boolean; compound: string }) {
+  const [pending, start] = useTransition();
+  const [on, setOn] = useState(enabled);
+  const [name, setName] = useState(compound);
+  const [saved, setSaved] = useState(false);
+  return (
+    <form onSubmit={(e) => { e.preventDefault(); start(async () => { const r = await saveSettings({ researchEnabled: on, researchCompound: name.trim() }); setSaved(r.ok); }); }}>
+      <p className="mb-4 text-sm text-fg-3">
+        An optional recordkeeping page for a research schedule you enter yourself: dates, protocol week, the amount you record, status and notes, plus optional observations charted next to your weight, measurements, strength, protein, sleep and cardio.
+        The app never suggests, calculates or changes an amount.
+      </p>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Row label="Show Research Protocol section">
+          <div role="radiogroup" aria-label="Research protocol section" className="flex w-fit gap-1 rounded-full bg-surface-2 p-1">
+            {([[false, 'Off'], [true, 'On']] as const).map(([k, l]) => (
+              <button key={l} type="button" role="radio" aria-checked={on === k} onClick={() => { setOn(k); setSaved(false); }} className={clsx('h-9 rounded-full px-4 text-sm font-medium', on === k ? 'bg-surface shadow-sm' : 'text-fg-3')}>{l}</button>
+            ))}
+          </div>
+        </Row>
+        <Row label="Compound name" hint="Stored only on this device (it isn’t part of the app’s public code).">
+          <input className="input" value={name} onChange={(e) => { setName(e.target.value); setSaved(false); }} autoCapitalize="words" autoComplete="off" />
+        </Row>
+      </div>
+      <SaveBar pending={pending} saved={saved} error={null} />
+    </form>
+  );
+}
+
+export function DataPanel({ mode, research = false }: { mode: 'real' | 'sample'; research?: boolean }) {
   const [pending, start] = useTransition();
   const [restore, setRestore] = useState<null | { file: File; summary: Record<string, number>; exportedAt: string }>(null);
   const [restoreErr, setRestoreErr] = useState<string | null>(null);
@@ -174,7 +204,7 @@ export function DataPanel({ mode }: { mode: 'real' | 'sample' }) {
       <div>
         <h3 className="mb-1 font-semibold">Export spreadsheets (CSV)</h3>
         <div className="mt-2 flex flex-wrap gap-2">
-          {([['measurements', 'Measurements'], ['workouts', 'Workouts (every set)'], ['cardio', 'Cardio'], ['daily', 'Protein, sleep & recovery']] as const).map(([k, l]) => (
+          {([['measurements', 'Measurements'], ['workouts', 'Workouts (every set)'], ['cardio', 'Cardio'], ['daily', 'Protein, sleep & recovery'], ...(research ? [['research', 'Research protocol']] as const : [])] as const).map(([k, l]) => (
             <button key={k} type="button" disabled={pending} onClick={() => deliver(() => downloadCsv(k))} className={buttonClass('secondary', 'sm')}>{l}</button>
           ))}
         </div>

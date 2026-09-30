@@ -233,6 +233,35 @@ export const MIGRATIONS: string[] = [
     notes       TEXT
   );
   `,
+  /* 2 — research protocol recordkeeping (user-entered only; the app never suggests amounts) */ `
+  CREATE TABLE research_entry (
+    id             INTEGER PRIMARY KEY,
+    date           TEXT NOT NULL,
+    protocol_week  INTEGER NOT NULL,
+    amount_mg      REAL,                   -- exactly what the user typed; NULL until they enter it
+    status         TEXT NOT NULL DEFAULT 'planned' CHECK (status IN ('planned','recorded','skipped')),
+    notes          TEXT,
+    recorded_at    TEXT,
+    created_at     TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX idx_re_date ON research_entry(date);
+
+  CREATE TABLE research_observation (
+    id          INTEGER PRIMARY KEY,
+    entry_id    INTEGER REFERENCES research_entry(id) ON DELETE SET NULL,
+    date        TEXT NOT NULL,
+    weight_lb   REAL,
+    appetite    INTEGER,                   -- 1–5
+    energy      INTEGER,                   -- 1–5
+    nausea      INTEGER,                   -- 0–10
+    gi          INTEGER,                   -- 0–10
+    skin        INTEGER,                   -- 0–10 (sensitivity / dysesthesia)
+    resting_hr  INTEGER,
+    notes       TEXT,
+    created_at  TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX idx_ro_date ON research_observation(date);
+  `,
 ];
 
 /** Tables in dependency order — used by backup/restore. */
@@ -256,6 +285,8 @@ export const TABLES = [
   'milestone',
   'daily_note',
   'import_run',
+  'research_entry',
+  'research_observation',
 ] as const;
 
 export type TableName = (typeof TABLES)[number];

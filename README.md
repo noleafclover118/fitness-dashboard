@@ -64,6 +64,7 @@ Every `git push` to `main` rebuilds and republishes automatically. The next time
 | **Nutrition** | Protein first: ring, grams to minimum, frequent foods one-tap, 14-day chart. Calories/carbs/fat optional and hidden by default. |
 | **Recovery** | Sleep vs your own baseline (never punitive), check-ins, knee-discomfort trend with a gentle, non-diagnostic note. |
 | **History** | Searchable journal, weekly-review table, activity timeline, edit or delete any workout. |
+| **Research Protocol** *(optional, off by default)* | Recordkeeping for a schedule **you** enter: date, protocol week, the amount you record (mg), status (planned / recorded / skipped), notes; bulk edit; optional observations (weight, appetite, energy, nausea, GI, skin sensitivity, resting HR). Charted on the same timeline as weight, abdomen, strength, protein, sleep and cardio. The app never suggests, fills in, calculates or changes an amount, and observations never drive recommendations. The compound name is typed in Settings and stored only on the device. |
 | **Settings** | Profile, targets, rest timer, units (lb/kg, in/cm), reminders, appearance (system/light/dark), backup/restore/export, sample preview. |
 
 ---

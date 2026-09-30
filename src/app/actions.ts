@@ -9,6 +9,7 @@ import { getSettings, updateSettings, updateProfile, type Settings } from '@/lib
 import * as plan from '@/lib/repo/plan';
 import * as wk from '@/lib/repo/workouts';
 import * as logs from '@/lib/repo/logs';
+import * as research from '@/lib/repo/research';
 import { evaluateMilestones, kneeCheck } from '@/lib/domain/summary';
 import { CSV_EXPORTS, exportAll, restoreBackup, validateBackup, type BackupPhoto } from '@/lib/backup';
 import { lengthToIn, weightToLb } from '@/lib/units';
@@ -493,4 +494,55 @@ export async function storageEstimate() {
   const keys = await idbKeys('photos');
   const est = await navigator.storage?.estimate?.().catch(() => undefined);
   return { photos: keys.filter((k) => k.startsWith(`${store.mode}:`)).length, usage: est?.usage ?? null };
+}
+
+// ---- research protocol (recordkeeping only — values are exactly what the user types) ------
+
+
+export async function researchAddWeek() {
+  return act((db) => ({ id: research.addWeek(db, today()) }));
+}
+
+export async function researchUpdate(id: number, patch: { date?: string; protocol_week?: number | string; amount?: number | string | null; status?: research.ResearchStatus; notes?: string | null }) {
+  return act((db) => {
+    research.updateEntry(db, id, {
+      date: patch.date ? validDate(patch.date) : undefined,
+      protocol_week: patch.protocol_week === undefined ? undefined : Number(patch.protocol_week),
+      amount_mg: patch.amount === undefined ? undefined : num(patch.amount),
+      status: patch.status,
+      notes: patch.notes === undefined ? undefined : patch.notes?.trim() || null,
+    });
+    return {};
+  });
+}
+
+export async function researchBulk(ids: number[], patch: { amount?: number | string | null; status?: research.ResearchStatus }) {
+  return act((db) => {
+    if (!ids.length) throw new Error('Select at least one week');
+    research.bulkUpdate(db, ids, { amount_mg: patch.amount === undefined ? undefined : num(patch.amount), status: patch.status });
+    return {};
+  });
+}
+
+export async function researchDelete(id: number) {
+  return act((db) => (research.deleteEntry(db, id), {}));
+}
+
+export async function researchRecord(id: number, obs: Record<string, string | undefined> | null) {
+  return act((db, s) => {
+    const e = research.getEntry(db, id);
+    if (!e) throw new Error('Entry not found');
+    const w = obs ? num(obs.weight) : null;
+    research.recordEntry(db, id, obs ? {
+      date: validDate(obs.date ?? e.date),
+      weight_lb: w == null ? null : Math.round(weightToLb(w, s.weightUnit) * 100) / 100,
+      appetite: num(obs.appetite), energy: num(obs.energy), nausea: num(obs.nausea), gi: num(obs.gi), skin: num(obs.skin),
+      resting_hr: num(obs.resting_hr), notes: obs.notes ?? null,
+    } : null);
+    return {};
+  });
+}
+
+export async function researchDeleteObservation(id: number) {
+  return act((db) => (research.deleteObservation(db, id), {}));
 }

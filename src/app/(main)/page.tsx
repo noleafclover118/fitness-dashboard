@@ -7,11 +7,15 @@ import { useDb } from '@/components/client/DataProvider';
 import { dashboardData } from '@/lib/domain/summary';
 import { weightSeries } from '@/lib/domain/series';
 import { strengthIndexSeries } from '@/lib/repo/workouts';
-import { addDays, formatLong, formatMinutes, today as getToday } from '@/lib/dates';
-import { fmtLength, fmtWeight, lengthFromIn, lengthSymbol, weightFromLb } from '@/lib/units';
+import { addDays, formatLong, formatMinutes, formatShort as formatShortDate, today as getToday } from '@/lib/dates';
+import { fmtLength, fmtNum, fmtWeight, lengthFromIn, lengthSymbol, weightFromLb } from '@/lib/units';
+
+const fmtNumber = (n: number) => fmtNum(n, 3);
 import { Card, CardTitle, Delta, Dots, LinkButton, Pill, ProgressBar } from '@/components/ui';
 import { Ring } from '@/components/Ring';
 import { RecompBoard } from '@/components/RecompBoard';
+import { ResearchNote } from '@/components/ResearchNote';
+import { researchStatus } from '@/lib/repo/research';
 import { LogButton, LogTrigger, StartWorkoutButton } from '@/components/client/Actions';
 import { TrendChart } from '@/components/client/Charts';
 
@@ -226,6 +230,22 @@ function Dashboard() {
           </ul>
         </Card>
       </div>
+
+      {d.settings.researchEnabled && (() => {
+        const rs = researchStatus(db, today);
+        return (
+          <Card className="rise" aria-labelledby="research-title">
+            <CardTitle id="research-title">Research protocol</CardTitle>
+            <dl className="grid grid-cols-3 gap-4">
+              <div><dt className="text-xs font-medium text-fg-3">Current week</dt><dd className="num mt-1 text-xl font-semibold">{rs.current ? rs.current.protocol_week : '—'}</dd></div>
+              <div><dt className="text-xs font-medium text-fg-3">Current user-entered protocol amount</dt><dd className="num mt-1 text-xl font-semibold">{rs.current?.amount_mg != null ? `${fmtNumber(rs.current.amount_mg)} mg` : '—'}</dd></div>
+              <div><dt className="text-xs font-medium text-fg-3">Next scheduled entry</dt><dd className="mt-1 text-xl font-semibold">{rs.next ? (rs.next.date === today ? 'Today' : formatShortDate(rs.next.date)) : '—'}</dd></div>
+            </dl>
+            <LinkButton href="/research" size="md" className="mt-5">View schedule</LinkButton>
+            <ResearchNote compound={d.settings.researchCompound} className="mt-4" />
+          </Card>
+        );
+      })()}
 
       {d.review.length > 0 && (
         <Card className="rise" aria-labelledby="review-title">

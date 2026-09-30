@@ -77,10 +77,14 @@ function BarTip({ active, payload, fmt, target }: TipProps & { fmt: (v: number) 
  * are faint dots (daily fluctuations de-emphasised on purpose).
  */
 export function TrendChart({
-  data, color, unit = '', height = 220, digits = 1, reference, referenceLabel, valueLabel, avgLabel, ariaLabel, compact,
+  data, color, unit = '', height = 220, digits = 1, reference, referenceLabel, valueLabel, avgLabel, ariaLabel, compact, curve = 'monotone', markers,
 }: {
   data: ChartPoint[]; color: string; unit?: string; height?: number; digits?: number; reference?: number | null; referenceLabel?: string;
   valueLabel?: string; avgLabel?: string; ariaLabel: string; compact?: boolean;
+  /** 'stepAfter' for values that hold until changed (e.g. a schedule). */
+  curve?: 'monotone' | 'stepAfter';
+  /** Dates (present in `data`) to mark with a thin vertical line. */
+  markers?: string[];
 }) {
   const gid = useId().replace(/:/g, '');
   const hasAvg = data.some((d) => d.avg != null);
@@ -91,7 +95,7 @@ export function TrendChart({
   const { domain, ticks } = niceScale(min, max);
   const fmt = (v: number) => `${v.toLocaleString('en-US', { maximumFractionDigits: digits })}${unit}`;
 
-  if (!data.length) return null;
+  if (!data.length || !values.length) return null;
   return (
     <div role="img" aria-label={ariaLabel} style={{ height }}>
       <ResponsiveContainer width="100%" height="100%">
@@ -110,6 +114,7 @@ export function TrendChart({
             <ReferenceLine y={reference} stroke="var(--axis)" strokeDasharray="0" strokeOpacity={0.6}
               label={referenceLabel && !compact ? { value: referenceLabel, position: 'insideTopRight', fill: 'var(--text-3)', fontSize: 11 } : undefined} />
           )}
+          {markers?.map((m) => <ReferenceLine key={m} x={m} stroke="var(--border-strong)" strokeWidth={1} />)}
           {hasAvg ? (
             <>
               <Scatter dataKey="value" fill={color} fillOpacity={0.28} shape="circle" isAnimationActive={false} />
@@ -117,7 +122,7 @@ export function TrendChart({
                 activeDot={{ r: 5, stroke: 'var(--surface)', strokeWidth: 2 }} animationDuration={700} />
             </>
           ) : (
-            <Area type="monotone" dataKey="value" stroke={color} strokeWidth={2.25} fill={`url(#g${gid})`} connectNulls
+            <Area type={curve} dataKey="value" stroke={color} strokeWidth={2.25} fill={`url(#g${gid})`} connectNulls
               dot={data.length <= 16 ? { r: 3.5, fill: color, stroke: 'var(--surface)', strokeWidth: 2 } : false}
               activeDot={{ r: 5, stroke: 'var(--surface)', strokeWidth: 2 }} animationDuration={700} />
           )}
@@ -129,9 +134,9 @@ export function TrendChart({
 
 /** Daily bars with an optional target line (e.g. protein minimum, sleep goal). */
 export function BarsChart({
-  data, color, unit = '', height = 200, target, targetLabel, ariaLabel, format = 'number', hitColor,
+  data, color, unit = '', height = 200, target, targetLabel, ariaLabel, format = 'number', hitColor, markers,
 }: {
-  data: ChartPoint[]; color: string; unit?: string; height?: number; target?: number; targetLabel?: string; ariaLabel: string;
+  data: ChartPoint[]; color: string; unit?: string; height?: number; target?: number; targetLabel?: string; ariaLabel: string; markers?: string[];
   /** 'hours' renders values (in hours) as "6h 30m". */
   format?: 'number' | 'hours'; hitColor?: string;
 }) {
@@ -144,6 +149,7 @@ export function BarsChart({
           <CartesianGrid vertical={false} stroke="var(--grid)" />
           <XAxis dataKey="date" tickFormatter={fmtDate} {...axisProps} minTickGap={24} />
           <YAxis {...axisProps} width={40} tickFormatter={(v: number) => (formatValue ? `${Math.round(v * 10) / 10}h` : String(v))} />
+          {markers?.map((m) => <ReferenceLine key={m} x={m} stroke="var(--border-strong)" strokeWidth={1} />)}
           <Tooltip content={(p) => <BarTip {...(p as unknown as TipProps)} fmt={fmt} target={target} />} cursor={{ fill: 'var(--surface-2)' }} />
           <Bar dataKey="value" maxBarSize={24} radius={[4, 4, 0, 0]} animationDuration={600}
             shape={(props: unknown) => {

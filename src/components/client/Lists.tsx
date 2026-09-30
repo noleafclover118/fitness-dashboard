@@ -2,13 +2,13 @@
 
 import { useState, useTransition, type ReactNode } from 'react';
 import { Trash2 } from 'lucide-react';
-import { deleteCardio, deleteMeasurement, deleteNote, deleteProtein, deleteRecovery, deleteSleep } from '@/app/actions';
+import { deleteCardio, deleteMeasurement, deleteNote, deleteProtein, deleteRecovery, deleteSleep, researchDeleteObservation } from '@/app/actions';
 import { Confirm } from './Sheet';
 import { formatShort } from '@/lib/dates';
 
-type Kind = 'cardio' | 'measurement' | 'note' | 'protein' | 'sleep' | 'recovery';
+type Kind = 'cardio' | 'measurement' | 'note' | 'protein' | 'sleep' | 'recovery' | 'observation';
 const DELETE: Record<Kind, (id: number) => Promise<unknown>> = {
-  cardio: deleteCardio, measurement: deleteMeasurement, note: deleteNote, protein: deleteProtein, sleep: deleteSleep, recovery: deleteRecovery,
+  cardio: deleteCardio, measurement: deleteMeasurement, note: deleteNote, protein: deleteProtein, sleep: deleteSleep, recovery: deleteRecovery, observation: researchDeleteObservation,
 };
 
 /** A row with a confirm-before-delete trash button. */

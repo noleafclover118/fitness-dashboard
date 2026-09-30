@@ -66,6 +66,10 @@ export const DEFAULT_SETTINGS = {
   showMacros: false,
   /** False until the first-run screen has been completed. */
   onboarded: false,
+  /** Optional research-protocol recordkeeping section (off by default). */
+  researchEnabled: false,
+  /** Compound name, typed by the user and stored only on their device. */
+  researchCompound: '',
   weeklyTargets: { strength: 3, cardio: 2, recovery: 2 },
   /** Reminder cadence in days. */
   reminders: { weight: 1, abdomen: 14, lower_waist: 21, chest: 28, photos: 28 },
